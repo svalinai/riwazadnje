@@ -1,5 +1,15 @@
 <template>
   <q-page padding>
+    <!-- Prikaz pretrage -->
+    <q-input
+      v-model="searchTerm"
+      debounce="300"
+      label="Pretraži vježbe"
+      class="q-mb-md"
+      dense
+      clearable
+    />
+
     <!-- Prikaz učitavanja dok se podaci ne učitaju -->
     <q-spinner v-if="loading" size="50px" class="text-center" />
 
@@ -8,7 +18,7 @@
       dark
       bordered
       class="bg-grey-9 my-card q-mb-md"
-      v-for="vjezba in vjezbe"
+      v-for="vjezba in filteredVjezbe"
       :key="vjezba.ID"
     >
       <q-card-section>
@@ -33,19 +43,19 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 
 export default {
   setup() {
-    // Definiramo stanje za vježbe i učitavanje
+    // Definiramo stanje za vježbe, učitavanje i pojam pretrage
     const vjezbe = ref([]);
     const loading = ref(true);
+    const searchTerm = ref(""); // Pojam za pretragu
 
-    // Funkcija za dohvat vježbi s backend servera
+    // Dohvat podataka o vježbama s backend servera
     onMounted(async () => {
       try {
-        // Poslali smo GET zahtjev backendu
         const response = await axios.get("http://localhost:4444/api/vjezbe");
         vjezbe.value = response.data; // Spremamo podatke u vjezbe
       } catch (error) {
@@ -55,9 +65,23 @@ export default {
       }
     });
 
+    // Računamo filtrirani popis vježbi na temelju unosa pretrage
+    const filteredVjezbe = computed(() => {
+      return vjezbe.value.filter(
+        (vjezba) =>
+          vjezba.naziv.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+          vjezba.opis.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+          vjezba.kategorija
+            .toLowerCase()
+            .includes(searchTerm.value.toLowerCase())
+      );
+    });
+
     return {
       vjezbe,
       loading,
+      searchTerm,
+      filteredVjezbe,
     };
   },
 };
