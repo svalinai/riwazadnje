@@ -65,11 +65,6 @@
         class="q-mb-md"
       />
       <q-btn label="Pošaljite" type="submit" color="primary" />
-
-      <!-- Poruka nakon uspješnog slanja -->
-      <div v-if="isSubmitted" class="q-mt-md text-center text-positive">
-        Uspješno ste poslali recenziju!
-      </div>
     </q-form>
   </q-page>
 </template>
@@ -80,7 +75,6 @@ export default {
     return {
       name: "",
       review: "",
-      isSubmitted: false, // Flag za praćenje statusa slanja recenzije
     };
   },
   methods: {
@@ -94,16 +88,20 @@ export default {
           }
         );
         if (response.status === 200) {
-          this.isSubmitted = true; // Postavi isSubmitted na true nakon uspješnog slanja
           this.$q.notify({
             type: "positive",
             message: "Recenzija je uspješno poslana!",
+            timeout: 3000,
           });
+          // Reset forme
+          this.name = "";
+          this.review = "";
         }
       } catch (error) {
         this.$q.notify({
           type: "negative",
           message: "Došlo je do pogreške pri slanju recenzije.",
+          timeout: 3000,
         });
       }
     },
@@ -158,9 +156,5 @@ export default {
 
 .q-btn {
   width: 100%;
-}
-
-.text-positive {
-  color: green; /* Dodano boje za uspješno poslanje */
 }
 </style>
